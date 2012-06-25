@@ -56,6 +56,16 @@ describe Grocer::Connection do
     ssl.should have_received(:connect)
   end
 
+  context 'with preloaded certificate' do
+    let(:connection_options) { { certificate_data: 'contents of a cert',
+                               gateway: 'push.example.com',
+                               port: 443 } }
+
+    it 'can be initialized with certificate data' do
+      subject.certificate_data.should == connection_options[:certificate_data]
+    end
+  end
+
   context 'an open SSLConnection' do
     before do
       ssl.stubs(:connected?).returns(true)

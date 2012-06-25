@@ -42,6 +42,16 @@ describe Grocer::SSLConnection do
     it 'is initialized with a port' do
       subject.port.should == connection_options[:port]
     end
+
+    context 'with preloaded certificate' do
+      let(:connection_options) { { certificate_data: 'contents of a cert',
+                                   gateway: 'push.example.com',
+                                    port: 443 } }
+
+      it 'can be initialized with certificate data' do
+        subject.certificate_data.should == connection_options[:certificate_data]
+      end
+    end
   end
 
   describe 'connecting' do
@@ -61,6 +71,44 @@ describe Grocer::SSLConnection do
       OpenSSL::SSL::SSLSocket.should have_received(:new).with(mock_socket, anything)
     end
   end
+
+  describe "connecting with preloaded certificate" do
+    before do
+      stub_sockets
+    end
+
+    let(:connection_options) {
+      {
+        certificate_data: File.read(File.dirname(__FILE__) + '/../fixtures/example.pem'),
+        passphrase:  'abc123',
+        gateway:     'gateway.push.highgroove.com',
+        port:         1234
+      }
+    }
+
+    it "sets up an SSL connection using certificate data" do
+      subject.connect
+      OpenSSL::SSL::SSLSocket.should have_received(:new).with(mock_socket, anything)
+    end
+  end
+
+  describe 'connecting with pkcs12 cert' do
+    before do
+      stub_sockets
+    end
+
+    let(:connection_options) { { 
+      certificate: OpenSSL::PKCS12.new(File.read(File.dirname(__FILE__) + '/../fixtures/example.pk12')),
+      gateway:     'gateway.push.highgroove.com',
+      port:         1234
+    } }
+
+    it "sets up an SSL connection using certificate key" do
+      subject.connect
+      OpenSSL::SSL::SSLSocket.should have_received(:new).with(mock_socket, anything)
+    end
+  end
+
 
   describe 'writing data' do
     before do

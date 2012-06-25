@@ -5,10 +5,11 @@ require 'grocer/ssl_connection'
 
 module Grocer
   class Connection
-    attr_reader :certificate, :passphrase, :gateway, :port, :retries
+    attr_reader :certificate, :certificate_data, :passphrase, :gateway, :port, :retries
 
     def initialize(options = {})
       @certificate = options.fetch(:certificate) { nil }
+      @certificate_data = options.fetch(:certificate_data) { nil }
       @passphrase = options.fetch(:passphrase) { nil }
       @gateway = options.fetch(:gateway) { fail NoGatewayError }
       @port = options.fetch(:port) { fail NoPortError }
@@ -39,6 +40,7 @@ module Grocer
 
     def build_connection
       Grocer::SSLConnection.new(certificate: certificate,
+                                certificate_data: certificate_data,
                                 passphrase: passphrase,
                                 gateway: gateway,
                                 port: port)
